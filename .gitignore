@@ -1,0 +1,5 @@
+/build
+*.bak
+*.map
+*.sym
+/unused.py
