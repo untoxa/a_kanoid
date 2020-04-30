@@ -70,7 +70,7 @@ __endasm;
 
 void __trap_function(context_t * context) {
     context->finished = 1;
-    while(1);
+    while(1) switch_to_thread();
 }
 
 context_t * get_thread_by_id(UINT8 id) {
