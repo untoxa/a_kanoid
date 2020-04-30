@@ -15,9 +15,6 @@
 #define BAT_MIN_X 0
 #define BAT_MAX_X ((20 * 8) - (3 * 8))
 
-#define MAX_THREADS 10
-#define MAX_BALLS 10
-
 void broadcast_message(UWORD msg) {
     context_t * ctx = first_context->next;
     while (ctx) {
@@ -37,31 +34,12 @@ void terminate_and_destroy_thread(context_t * thread) {
     }
 }
 
-context_t thread_contexts[MAX_THREADS];
-context_t * free_contexts = 0;
-
-ball_t ball_objects[MAX_BALLS];
-ball_t * free_balls = 0;
-
-void init_ball_coords(ball_object_t * ball) {
-    ball->x = 1; ball->dx = 1; 
-    ball->y = 1; ball->dy = 0; 
-    ball->speed = 0;
-    ball->state = BALL_STUCK;
-}
-
-void init_ball(ball_object_t * ball, UBYTE no) {
-    set_sprite_tile(3 + no, 3);
-    ball->idx = 3 + no;
-    init_ball_coords(ball);
-}
-
 void execute_ball_thread() {
     if ((free_contexts) && (free_balls)) {
         ball_t * ball = free_balls;
         free_balls = ball->next;
         
-        init_ball_coords(&ball->object);
+        ball_init_coords(&ball->object);
         
         context_t * ctx = free_contexts;
         free_contexts = ctx->next;
@@ -80,7 +58,7 @@ const sprite_offset_t const bat_offsets[3] = {{0x10, 0x08}, {0x10, 0x10}, {0x10,
 const unsigned char const bat_tile_map[3] = {0, 1, 2};
 
 UWORD last_tick, now;
-UBYTE joy, j_b_dn;
+UBYTE joy, j_a_dn, j_b_dn;
 UBYTE old_pad_x = 1, pad_x = 0, old_pad_y, pad_y = (17 * 8);
 UWORD msg;
 UBYTE msg_h, msg_l;
@@ -104,7 +82,9 @@ void main () {
     // create pool of balls
     for (UBYTE i = 0; i < MAX_BALLS; i++) {
         ball_objects[i].next = free_balls;
-        init_ball(&ball_objects[i].object, i);
+        set_sprite_tile(i + 3, 3);
+        ball_objects[i].object.idx = i + 3;
+        ball_init_coords(&ball_objects[i].object);
         free_balls = &ball_objects[i];
     }    
       
@@ -128,11 +108,13 @@ void main () {
                 if (pad_x < BAT_MAX_X) pad_x++;
             } else if (joy & J_A) {
                 broadcast_message(QUEUE_COMMAND | UNSTUCK_BALL);
+                j_a_dn = 1;
             } else if ((joy & J_B) && (!j_b_dn)) {
                 execute_ball_thread();
                 j_b_dn = 1;
             }
-            if (!(joy & J_B)) j_b_dn = 0;                     // B button UP
+            if (!(joy & J_A)) j_a_dn = 0;                   // A button UP
+            if (!(joy & J_B)) j_b_dn = 0;                   // B button UP
 
             if ((old_pad_x != pad_x) || (old_pad_y != pad_y)) {
                 multiple_move_sprites(0, 3, pad_x, pad_y, &bat_offsets[0]);

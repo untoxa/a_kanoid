@@ -1,4 +1,4 @@
-#include <gb/gb.h>
+#include "ball.h"
 
 #include "threads.h"
 #include "ring.h"
@@ -7,14 +7,19 @@
 
 #include "globals.h"
 
-#include "ball.h"
-
 #define  MIN_BALL_X 0
 #define  MAX_BALL_X ((20 - 1) * 8)
 #define  MIN_BALL_Y 0
 #define  MAX_BALL_Y ((18 - 1) * 8)
 
 const sprite_offset_t const ball_offset = {0x10, 0x08};
+
+void ball_init_coords(ball_object_t * ball) {
+    ball->x = 1; ball->dx = 1; 
+    ball->y = 1; ball->dy = 0; 
+    ball->speed = 0;
+    ball->state = BALL_STUCK;
+}
 
 void ball_threadproc(void * arg, void * ctx) {
     ring_t * queue = (ring_t *)(((context_t *)ctx)->queue);
@@ -50,11 +55,16 @@ void ball_threadproc(void * arg, void * ctx) {
                     if (ball->dy) { 
                         if ((ball->y) >= MAX_BALL_Y) __critical {
                             ring_put(&feedback_ring, MAKE_WORD(KILL_BALL, ((context_t *)ctx)->thread_id));
-                        } else ball->y++;  
+                        } else {
+                            ball->y++;
+                            if ((ball->x > bat_x - 6) && (ball->x < bat_x + ((3 * 8) + 2)))
+                                if ((ball->y > bat_y - 8) && (ball->y < bat_y - 6)) 
+                                    ball->dy = 0;
+                        }
                     } else { 
                         if (ball->y) ball->y--; 
                         if (ball->y == MIN_BALL_Y) ball->dy = 1;             
-                    }
+                    }                    
                     multiple_move_sprites(ball->idx, 1, ball->x, ball->y, &ball_offset);
                     break;
             }
