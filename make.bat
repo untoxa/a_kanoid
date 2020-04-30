@@ -5,7 +5,7 @@
 @set OBJ=build\
 @set SRC=src\
 
-@set CFLAGS=-mgbz80 --no-std-crt0 -Dnonbanked= -I %GBDK%\include -I %GBDK%\include\asm -I src\include -c
+@set CFLAGS=-mgbz80 --no-std-crt0 -Dnonbanked= -I %GBDK%\include -I %GBDK%\include\asm -I %SRC%include -c
 @rem set CFLAGS=%CFLAGS% -DUSE_SFR_FOR_REG
 
 @set LFLAGS=-n -- -z -m -j -yt2 -yo4 -ya4 -k%GBDKLIB%\gbz80\ -lgbz80.lib -k%GBDKLIB%\gb\ -lgb.lib 

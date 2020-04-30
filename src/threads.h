@@ -3,6 +3,8 @@
 
 #include <gb/gb.h>
 
+#define DEFAULT_STACK_SIZE 0
+
 #define CONTEXT_STACK_SIZE 256                 // stack size in bytes, must be sufficent for your threads, set it with care
 #define CONTEXT_STACK_SIZE_IN_WORDS (CONTEXT_STACK_SIZE >> 1)
 typedef void (* threadproc_t)(void * arg, void * ctx); // prototype of a threadproc()

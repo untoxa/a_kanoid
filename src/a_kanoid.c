@@ -49,7 +49,7 @@ void execute_ball_thread() {
         ctx->userdata = (void *)(ball);
 
         __critical { 
-            create_thread(ctx, 0, &ball_threadproc, (void *)&ball->object);
+            create_thread(ctx, DEFAULT_STACK_SIZE, &ball_threadproc, (void *)&ball->object);
         }
     }
 }
