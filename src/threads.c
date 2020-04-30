@@ -70,7 +70,7 @@ __endasm;
 
 void __trap_function(context_t * context) {
     context->finished = 1;
-    while(1) switch_to_thread();
+    while(1) switch_to_thread();    // it is safe to dispose context when the thread execution is here
 }
 
 context_t * get_thread_by_id(UINT8 id) {
@@ -88,8 +88,8 @@ UINT8 generate_thread_id() {
     return id;
 }
 
-void create_thread(context_t * context, int stack_size, task_t task, void * arg) {   
-    if ((context) && (task)) {
+void create_thread(context_t * context, int stack_size, threadproc_t threadproc, void * arg) {   
+    if ((context) && (threadproc)) {
         if (!stack_size) stack_size = CONTEXT_STACK_SIZE_IN_WORDS; else stack_size = stack_size >> 1;
         context_t * last_context;
         
@@ -99,11 +99,11 @@ void create_thread(context_t * context, int stack_size, task_t task, void * arg)
         // memset is not actually necessary
         for (int i = 0; i < stack_size; i++) context->stack[i] = 0;
         // set stack for a new thread
-        context->stack[stack_size - 1] = (UINT16)context;   // thread context 
-        context->stack[stack_size - 2] = (UINT16)arg;       // threadfunc argument
-        context->stack[stack_size - 3] = (UINT16)__trap_function;
-        context->stack[stack_size - 4] = (UINT16)task;      // threadfunc entry point   
-        context->task_sp = &context->stack[stack_size - 8]; // space for registers (all become null on thread entry)
+        context->stack[stack_size - 1] = (UINT16)context;           // thread context 
+        context->stack[stack_size - 2] = (UINT16)arg;               // threadproc argument
+        context->stack[stack_size - 3] = (UINT16)__trap_function;   // fall thare when threadproc exits
+        context->stack[stack_size - 4] = (UINT16)threadproc;        // threadproc entry point   
+        context->task_sp = &context->stack[stack_size - 8];         // space for registers (all registers are 0 on threadproc entry)
 
         // get last context in the chain
         for (last_context = first_context; (last_context->next); last_context = last_context->next) ;

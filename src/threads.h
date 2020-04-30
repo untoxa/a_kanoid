@@ -3,11 +3,11 @@
 
 #include <gb/gb.h>
 
-#define CONTEXT_STACK_SIZE 256                 // stack size in bytes, must be sufficent for your tasks, set it with care
+#define CONTEXT_STACK_SIZE 256                 // stack size in bytes, must be sufficent for your threads, set it with care
 #define CONTEXT_STACK_SIZE_IN_WORDS (CONTEXT_STACK_SIZE >> 1)
-typedef void (* task_t)(void * arg, void * ctx);      // prototype of a threadfunc()
-typedef struct context_t {                     // context of a task
-    unsigned char * task_sp;
+typedef void (* threadproc_t)(void * arg, void * ctx); // prototype of a threadproc()
+typedef struct context_t {                     // context of a thread
+    unsigned char * task_sp;                   // current stack pointer of a thread
     struct context_t * next;                   // next context
     void * queue;                              // queue of the context
     void * userdata;                           // user data of the context
@@ -16,18 +16,18 @@ typedef struct context_t {                     // context of a task
     UINT8 finished;                            // thread finished signal
     UINT16 stack[CONTEXT_STACK_SIZE_IN_WORDS]; // context stack size
 } context_t;
-typedef struct {                               // context of main(); stack is a native stack that is set by crt
-    unsigned char * task_sp;
+typedef struct {                               // context of main(): stack is "crt-native"
+    unsigned char * task_sp;                   // current stack pointer of main()
     struct context_t * next;                   // next context
 } main_context_t;
 
-extern main_context_t main_context;            // this is a main task context  
+extern main_context_t main_context;            // this is a main() context  
 extern context_t * first_context;              // start of a context chain 
 
 extern void supervisor();
 extern void switch_to_thread();
 
-extern void create_thread(context_t * context, int stack_size, task_t task, void * arg);
+extern void create_thread(context_t * context, int stack_size, threadproc_t threadproc, void * arg);
 extern void destroy_thread(context_t * context);
 
 extern context_t * get_thread_by_id(UINT8 id);
