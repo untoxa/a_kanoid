@@ -5,8 +5,7 @@
 @set OBJ=build\
 @set SRC=src\
 
-@set CFLAGS=-mgbz80 --no-std-crt0 -Dnonbanked= -I %GBDK%\include -I %GBDK%\include\asm -I %SRC%include -c
-@rem set CFLAGS=%CFLAGS% -DUSE_SFR_FOR_REG
+@set CFLAGS=-mgbz80 --no-std-crt0 -I %GBDK%\include -I %GBDK%\include\asm -I %SRC%include -c
 
 @set LFLAGS=-n -- -z -m -j -yt2 -yo4 -ya4 -k%GBDKLIB%\gbz80\ -lgbz80.lib -k%GBDKLIB%\gb\ -lgb.lib 
 @set LFILES=%GBDKLIB%\gb\crt0.o
@@ -25,8 +24,7 @@
 @echo ASSEMBLING THE STUB...
 
 sdasgb %ASMFLAGS% %OBJ%MBC1_RAM_INIT.rel %SRC%MBC1_RAM_INIT.s
-sdasgb %ASMFLAGS% %OBJ%__sdcc_call_hl.rel %SRC%__sdcc_call_hl.s
-@set LFILES=%LFILES% %OBJ%MBC1_RAM_INIT.rel %OBJ%__sdcc_call_hl.rel
+@set LFILES=%LFILES% %OBJ%MBC1_RAM_INIT.rel
 
 @echo COMPILING WITH SDCC4...
 
