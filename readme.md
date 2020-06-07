@@ -9,4 +9,6 @@ threading library and some synchronization primitives.
 Balls are threads that interact with main() by means of queues 
 that are ring buffers.
 
+Powered by GBDK-2020.
+
 ![screenshot](/screenshot.png)

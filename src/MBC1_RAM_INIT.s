@@ -7,7 +7,3 @@
 	;SET_RAM_MBC1_MODE(1);
 	ld      A, #0x01
         ld      (#0x6000), A
-
-;        .area _CODE
-;banked_call::
-;        ret
