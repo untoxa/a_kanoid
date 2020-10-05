@@ -1,6 +1,5 @@
 #include <gb/gb.h>
 #include <gb/font.h>
-#include <stdio.h>
 
 #include "threads.h"
 #include "ring.h"
@@ -62,10 +61,8 @@ UBYTE joy, j_a_dn, j_b_dn;
 UBYTE old_pad_x = 1, pad_x = 0, old_pad_y, pad_y = (17 * 8);
 UWORD msg;
 UBYTE msg_h, msg_l;
-void main () {
-    font_init();
-    font_set(font_load(font_spect));
 
+void main () {
     set_sprite_data(0, 3, bat_tiles); 
     multiple_set_sprite_tiles(0, 3, bat_tile_map);          // bat
     

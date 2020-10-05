@@ -1,0 +1,1 @@
+@python .\utils\romusage.py .\a_kanoid.gb
