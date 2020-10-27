@@ -5,7 +5,7 @@
 @set OBJ=build\
 @set SRC=src\
 
-@set CFLAGS=-Isrc/include -tempdir=./build -Wl-yt2 -Wl-yo4 -Wl-ya4 -Wf"--max-allocs-per-node 50000" -Wf"--peep-file peephole\gbz80.rul"
+@set CFLAGS=-Isrc/include -tempdir=./build -Wl-yt2 -Wl-yo4 -Wl-ya4 -Wf"--max-allocs-per-node 50000" -Wf"--peep-file peephole\gbz80.rul" -Wl-j
 
 @echo Cleanup...
 

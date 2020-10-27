@@ -56,9 +56,9 @@ void execute_ball_thread() {
 const sprite_offset_t const bat_offsets[3] = {{0x10, 0x08}, {0x10, 0x10}, {0x10, 0x18}};
 const unsigned char const bat_tile_map[3] = {0, 1, 2};
 
-UWORD last_tick, now;
+UWORD last_tick = 0, now;
 UBYTE joy, j_a_dn, j_b_dn;
-UBYTE old_pad_x = 1, pad_x = 0, old_pad_y, pad_y = (17 * 8);
+UBYTE old_pad_x = 1, pad_x = 0, old_pad_y = 0, pad_y = (17 * 8);
 UWORD msg;
 UBYTE msg_h, msg_l;
 
