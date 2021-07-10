@@ -1,1 +1,0 @@
-@python .\utils\noi2sym.py a_kanoid.noi >a_kanoid.sym

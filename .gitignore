@@ -1,4 +1,10 @@
-/build
 *.bak
 *.map
 *.sym
+/unused
+/obj
+/build/*.map
+/build/*.sym
+/build/*.ihx
+/build/*.noi
+/build/*.cdb
