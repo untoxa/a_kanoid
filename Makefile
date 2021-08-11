@@ -11,7 +11,7 @@ PROJECT_NAME = a_kanoid
 
 SYMBOLS = -Wl-j -Wm-yS -Wl-m -Wl-w
 
-CFLAGS = -Isrc/include -I$(OBJDIR) -Wa-Isrc/include -Wa-I$(GBDKLIB)
+CFLAGS = -Iinclude -I$(OBJDIR) -Wa-Iinclude -Wa-I$(GBDKLIB)
 
 #LFLAGS_NBANKS += -Wl-yt0x1A -Wl-yoA -Wl-ya4
 LFLAGS_NBANKS =
