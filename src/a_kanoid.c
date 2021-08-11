@@ -3,7 +3,8 @@
 
 #include "threads.h"
 #include "ring.h"
-#include "sprite_utils.h"
+
+#include "gb/metasprites.h"
 
 #include "utils.h"
 
@@ -53,7 +54,13 @@ void execute_ball_thread() {
     }
 }
 
-const sprite_offset_t const bat_offsets[3] = {{0x10, 0x08}, {0x10, 0x10}, {0x10, 0x18}};
+//const sprite_offset_t const bat_offsets[3] = {{0x10, 0x08}, {0x10, 0x10}, {0x10, 0x18}};
+const metasprite_t bat0[] = {
+    {16, 8, 0, 0}, {0, 8, 1, 0},  {0, 8, 2, 0}, {metasprite_end}
+};
+const metasprite_t * const bat[] = { bat0 };
+
+
 const unsigned char const bat_tile_map[3] = {0, 1, 2};
 
 UWORD last_tick = 0, now;
@@ -64,8 +71,6 @@ UBYTE msg_h, msg_l;
 
 void main () {
     set_sprite_data(0, 3, bat_tiles); 
-    multiple_set_sprite_tiles(0, 3, bat_tile_map);          // bat
-    
     set_sprite_data(3, 1, ball); 
     
     ring_init(&feedback_ring, 0);                           // initialize a feedback ring
@@ -114,7 +119,8 @@ void main () {
             if (!(joy & J_B)) j_b_dn = 0;                   // B button UP
 
             if ((old_pad_x != pad_x) || (old_pad_y != pad_y)) {
-                multiple_move_sprites(0, 3, pad_x, pad_y, &bat_offsets[0]);
+
+                move_metasprite(bat[0], 0, 0, pad_x, pad_y);
                 old_pad_x = pad_x;
                 broadcast_message(MAKE_WORD(pad_y, pad_x));
             }

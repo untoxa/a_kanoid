@@ -2,7 +2,6 @@
 
 #include "threads.h"
 #include "ring.h"
-#include "sprite_utils.h"
 #include "utils.h"
 
 #include "globals.h"
@@ -11,8 +10,6 @@
 #define  MAX_BALL_X ((20 - 1) * 8)
 #define  MIN_BALL_Y 0
 #define  MAX_BALL_Y ((18 - 1) * 8)
-
-const sprite_offset_t const ball_offset = {0x10, 0x08};
 
 void ball_init_coords(ball_object_t * ball) {
     ball->x = 1; ball->dx = 1; 
@@ -43,7 +40,7 @@ void ball_threadproc(void * arg, void * ctx) {
                 case BALL_STUCK:
                     ball->x = bat_x + 8;
                     ball->y = bat_y - 8;
-                    multiple_move_sprites(ball->idx, 1, ball->x, ball->y, &ball_offset);
+                    move_sprite(ball->idx, ball->x + 0x08u, ball->y + 0x10u);
                     break;
                 case BALL_FLY: 
                     if (ball->dx) { 
@@ -65,7 +62,7 @@ void ball_threadproc(void * arg, void * ctx) {
                         if (ball->y) ball->y--; 
                         if (ball->y == MIN_BALL_Y) ball->dy = 1;             
                     }                    
-                    multiple_move_sprites(ball->idx, 1, ball->x, ball->y, &ball_offset);
+                    move_sprite(ball->idx, ball->x + 0x08u, ball->y + 0x10u);
                     break;
             }
             last_tick = now;

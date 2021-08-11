@@ -8,3 +8,4 @@
 /build/*.ihx
 /build/*.noi
 /build/*.cdb
+/.vscode
