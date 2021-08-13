@@ -126,7 +126,7 @@ void main () {
             }
             last_tick = now;
         }
-        if (ring_get(&feedback_ring, &msg)) {
+        while (ring_get(&feedback_ring, &msg)) {
             SPLIT_WORD(msg, msg_h, msg_l);
             switch (msg_h) {
                 case KILL_BALL: {
@@ -145,5 +145,7 @@ void main () {
                 }
             }
         }
+        switch_to_thread(); 
+        wait_vbl_done();        // main thread is always last in the list, so we may halt here  
     }
 }
