@@ -25,7 +25,7 @@ void ball_threadproc(void * arg, void * ctx) {
     UWORD msg;
     UBYTE bat_x = 0, bat_y = 0;
     while(!((context_t *)ctx)->terminated) {
-        if (ring_get(queue, &msg)) {
+        while (ring_get(queue, &msg)) {
             if ((msg & QUEUE_COMMAND) == QUEUE_COMMAND) {
                 switch ((UBYTE)msg) {
                     case UNSTUCK_BALL:
@@ -54,8 +54,8 @@ void ball_threadproc(void * arg, void * ctx) {
                             ring_put(&feedback_ring, MAKE_WORD(KILL_BALL, ((context_t *)ctx)->thread_id));
                         } else {
                             ball->y++;
-                            if ((ball->x > bat_x - 6) && (ball->x < bat_x + ((3 * 8) + 2)))
-                                if ((ball->y > bat_y - 8) && (ball->y < bat_y - 6)) 
+                            if ((ball->x > (bat_x - 6)) && (ball->x < (bat_x + ((3 * 8) + 2))))
+                                if ((ball->y > (bat_y - 8)) && (ball->y < (bat_y - 6))) 
                                     ball->dy = 0;
                         }
                     } else { 
@@ -69,5 +69,5 @@ void ball_threadproc(void * arg, void * ctx) {
         }
         switch_to_thread();
     }
-    move_sprite(ball->idx, 0, 0);
+    hide_sprite(ball->idx);
 }

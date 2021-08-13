@@ -95,7 +95,7 @@ void main () {
     add_TIM(&supervisor);    
     TMA_REG = 0xE0U; TAC_REG = 0x04U;
     set_interrupts(VBL_IFLAG | TIM_IFLAG);
-    
+
     SHOW_SPRITES;
         
     broadcast_message(MAKE_WORD(pad_y, pad_x));             // broadcast position of a bat    
