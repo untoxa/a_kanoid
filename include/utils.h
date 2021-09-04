@@ -1,7 +1,7 @@
 #ifndef __UTILS_H_INCLUDE
 #define __UTILS_H_INCLUDE
 
-#include <gb/gb.h>
+#include <gbdk/platform.h>
 
 #define abs(a) (((int)(a) & 0x8000)?((int)(!(a))+1):(a)) 
 

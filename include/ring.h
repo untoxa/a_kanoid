@@ -1,7 +1,7 @@
 #ifndef __RING_H_INCLUDE
 #define __RING_H_INCLUDE
 
-#include <gb/gb.h>
+#include <gbdk/platform.h>
 
 #define RING_SIZE 128
 #define RING_SIZE_IN_WORDS (RING_SIZE >> 1)

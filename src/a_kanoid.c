@@ -1,10 +1,9 @@
-#include <gb/gb.h>
-#include <gb/font.h>
+#include <gbdk/platform.h>
+#include <gbdk/font.h>
+#include <gbdk/metasprites.h>
 
 #include "threads.h"
 #include "ring.h"
-
-#include "gb/metasprites.h"
 
 #include "utils.h"
 

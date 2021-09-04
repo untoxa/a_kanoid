@@ -1,7 +1,7 @@
 #ifndef __BALL_H_INCLUDE
 #define __BALL_H_INCLUDE
 
-#include <gb/gb.h>
+#include <gbdk/platform.h>
 
 #include "ring.h"
 
