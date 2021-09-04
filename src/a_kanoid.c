@@ -12,7 +12,7 @@
 #include "tile_data.h"
 
 #define BAT_MIN_X 0
-#define BAT_MAX_X ((20 * 8) - (3 * 8))
+#define BAT_MAX_X ((DEVICE_SCREEN_WIDTH * 8) - (3 * 8))
 
 void broadcast_message(UWORD msg) {
     context_t * ctx = first_context->next;
@@ -55,7 +55,7 @@ void execute_ball_thread() {
 
 //const sprite_offset_t const bat_offsets[3] = {{0x10, 0x08}, {0x10, 0x10}, {0x10, 0x18}};
 const metasprite_t bat0[] = {
-    {16, 8, 0, 0}, {0, 8, 1, 0},  {0, 8, 2, 0}, {metasprite_end}
+    {DEVICE_SPRITE_OFFSET_Y, DEVICE_SPRITE_OFFSET_X, 0, 0}, {0, 8, 1, 0},  {0, 8, 2, 0}, {metasprite_end}
 };
 const metasprite_t * const bat[] = { bat0 };
 
@@ -64,7 +64,7 @@ const unsigned char const bat_tile_map[3] = {0, 1, 2};
 
 UWORD last_tick = 0, now;
 UBYTE joy, j_a_dn, j_b_dn;
-UBYTE old_pad_x = 1, pad_x = 0, old_pad_y = 0, pad_y = (17 * 8);
+UBYTE old_pad_x = 1, pad_x = 0, old_pad_y = 0, pad_y = ((DEVICE_SCREEN_HEIGHT - 1) * 8);
 UWORD msg;
 UBYTE msg_h, msg_l;
 
@@ -91,9 +91,14 @@ void main () {
       
     execute_ball_thread();
     
+#if defined(__TARGET_gb) || defined(__TARGET_ap)
     add_TIM(&supervisor);    
     TMA_REG = 0xE0U; TAC_REG = 0x04U;
     set_interrupts(VBL_IFLAG | TIM_IFLAG);
+#elif defined(__TARGET_sms) || defined(__TARGET_gg)
+    add_VBL(&supervisor);
+    set_interrupts(VBL_IFLAG); 
+#endif
 
     SHOW_SPRITES;
         

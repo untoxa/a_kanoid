@@ -7,9 +7,9 @@
 #include "globals.h"
 
 #define  MIN_BALL_X 0
-#define  MAX_BALL_X ((20 - 1) * 8)
+#define  MAX_BALL_X ((DEVICE_SCREEN_WIDTH - 1) * 8)
 #define  MIN_BALL_Y 0
-#define  MAX_BALL_Y ((18 - 1) * 8)
+#define  MAX_BALL_Y ((DEVICE_SCREEN_HEIGHT - 1) * 8)
 
 void ball_init_coords(ball_object_t * ball) {
     ball->x = 1; ball->dx = 1; 
@@ -40,7 +40,7 @@ void ball_threadproc(void * arg, void * ctx) {
                 case BALL_STUCK:
                     ball->x = bat_x + 8;
                     ball->y = bat_y - 8;
-                    move_sprite(ball->idx, ball->x + 0x08u, ball->y + 0x10u);
+                    move_sprite(ball->idx, ball->x + DEVICE_SPRITE_OFFSET_X, ball->y + DEVICE_SPRITE_OFFSET_Y);
                     break;
                 case BALL_FLY: 
                     if (ball->dx) { 
@@ -62,7 +62,7 @@ void ball_threadproc(void * arg, void * ctx) {
                         if (ball->y) ball->y--; 
                         if (ball->y == MIN_BALL_Y) ball->dy = 1;             
                     }                    
-                    move_sprite(ball->idx, ball->x + 0x08u, ball->y + 0x10u);
+                    move_sprite(ball->idx, ball->x + DEVICE_SPRITE_OFFSET_X, ball->y + DEVICE_SPRITE_OFFSET_Y);
                     break;
             }
             last_tick = now;

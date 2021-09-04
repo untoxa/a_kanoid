@@ -1,77 +1,82 @@
-GBDK = ../../gbdk
-GBDKLIB = $(GBDK)/lib/small/asxxxx
-CC = $(GBDK)/bin/lcc
-TOOLS = ./tools
+SHELL := /bin/bash
 
-ROM_BUILD_DIR = build
-OBJDIR = obj
+# If you move this project you can change the directory
+# to match your GBDK root directory (ex: GBDK_HOME = "C:/GBDK/"
+GBDK_HOME = ../../gbdk/
+LCC = $(GBDK_HOME)bin/lcc
 
+# Set platforms to build here, spaced separated. (These are in the separate Makefile.targets)
+# They can also be built/cleaned individually: "make gg" and "make gg-clean"
+# Possible are: gb gbc pocket sms gg
+TARGETS=gb pocket sms gg
 
-PROJECT_NAME = a_kanoid
+# Configure platform specific LCC flags here:
+LCCFLAGS_gb      = -Wm-yS
+LCCFLAGS_pocket  = -Wm-yS # Usually the same as required for .gb
+LCCFLAGS_gbc     = -Wm-yS -Wm-yc # Same as .gb with: -Wm-yc (gb & gbc) or Wm-yC (gbc exclusive)
+LCCFLAGS_sms     = -Wm-yS
+LCCFLAGS_gg      = -Wm-yS
 
-SYMBOLS = -Wl-j -Wm-yS -Wl-m -Wl-w
+LCCFLAGS += $(LCCFLAGS_$(EXT)) # This adds the current platform specific LCC Flags
 
-CFLAGS = -Iinclude -I$(OBJDIR) -Wa-Iinclude -Wa-I$(GBDKLIB)
+# LCCFLAGS += -Wl-j -Wm-yoA -Wm-ya4 -autobank -Wb-ext=.rel -Wb-v # MBC + Autobanking related flags
+LCCFLAGS += -Wl-j
+# LCCFLAGS += -debug # Uncomment to enable debug output
+# LCCFLAGS += -v     # Uncomment for lcc verbose output
 
-#LFLAGS_NBANKS += -Wl-yt0x1A -Wl-yoA -Wl-ya4
-LFLAGS_NBANKS =
+CFLAGS = -Wf-Iinclude
 
-LFLAGS = $(LFLAGS_NBANKS) $(SYMBOLS) -Wm-yn$(PROJECT_NAME)
+# You can set the name of the ROM file here
+PROJECTNAME = a_kanoid
 
-TARGET = $(ROM_BUILD_DIR)/$(PROJECT_NAME).gb
+# EXT?=gb # Only sets extension to default (game boy .gb) if not populated
+SRCDIR      = src
+OBJDIR      = obj/$(EXT)
+RESDIR      = res
+BINDIR      = build/$(EXT)
+MKDIRS      = $(OBJDIR) $(BINDIR) # See bottom of Makefile for directory auto-creation
 
-ASRC = $(foreach dir,src,$(notdir $(wildcard $(dir)/*.s))) 
-CSRC = $(foreach dir,src,$(notdir $(wildcard $(dir)/*.c))) 
+BINS	    = $(OBJDIR)/$(PROJECTNAME).$(EXT)
+CSOURCES    = $(foreach dir,$(SRCDIR),$(notdir $(wildcard $(dir)/*.c))) $(foreach dir,$(RESDIR),$(notdir $(wildcard $(dir)/*.c)))
+ASMSOURCES  = $(foreach dir,$(SRCDIR),$(notdir $(wildcard $(dir)/*.s)))
+OBJS        = $(CSOURCES:%.c=$(OBJDIR)/%.o) $(ASMSOURCES:%.s=$(OBJDIR)/%.o)
 
-OBJS = $(CSRC:%.c=$(OBJDIR)/%.o) $(ASRC:%.s=$(OBJDIR)/%.o)
+# Builds all targets sequentially
+all: $(TARGETS)
 
-all:	directories $(TARGET)
-#all:	directories release $(TARGET)
+# Compile .c files in "src/" to .o object files
+$(OBJDIR)/%.o:	$(SRCDIR)/%.c
+	$(LCC) $(CFLAGS) -c -o $@ $<
 
-.PHONY: clean release debug color profile directories
+# Compile .c files in "res/" to .o object files
+$(OBJDIR)/%.o:	$(RESDIR)/%.c
+	$(LCC) $(CFLAGS) -c -o $@ $<
 
-release:
-	$(eval CFLAGS += -Wf'--max-allocs-per-node 200000')
-	@echo "RELEASE mode ON"
-	
-debug:
-	$(eval CFLAGS += -Wf--debug $(SYMBOLS) -Wl-y)
-	$(eval CFLAGS += -Wf--nolospre -Wf--nogcse)
-	$(eval LFLAGS += -Wf--debug -Wl-y)
-	@echo "DEBUG mode ON"
+# Compile .s assembly files in "src/" to .o object files
+$(OBJDIR)/%.o:	$(SRCDIR)/%.s
+	$(LCC) $(CFLAGS) -c -o $@ $<
 
-color:
-	$(eval CFLAGS += -DCGB)
-	$(eval LFLAGS += -Wm-yC)
-	@echo "COLOR mode ON"
+# If needed, compile .c files i n"src/" to .s assembly files
+# (not required if .c is compiled directly to .o)
+$(OBJDIR)/%.s:	$(SRCDIR)/%.c
+	$(LCC) $(CFLAGS) -S -o $@ $<
 
-profile:
-	$(eval CFLAGS += -Wf--profile)
-	@echo "PROFILE mode ON"
-
-.SECONDARY: $(OBJS) 
-	
-directories: $(ROM_BUILD_DIR) $(OBJDIR)
-
-$(ROM_BUILD_DIR):
-	mkdir -p $(ROM_BUILD_DIR)
-
-$(OBJDIR):
-	mkdir -p $(OBJDIR)
-
-$(OBJDIR)/%.o:	src/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-$(OBJDIR)/%.o:	src/%.s
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-$(ROM_BUILD_DIR)/%.gb:	$(OBJS)
-	mkdir -p $(ROM_BUILD_DIR)
-	$(CC) $(LFLAGS) -o $@ $^
+# Link the compiled object files into a .gb ROM file
+$(BINS):	$(OBJS)
+	$(LCC) $(LCCFLAGS) $(CFLAGS) -o $(BINDIR)/$(PROJECTNAME).$(EXT) $(OBJS)
 
 clean:
-	@echo "CLEANUP..."
-	rm -rf $(OBJDIR)
-	rm -rf $(ROM_BUILD_DIR)
+	@echo Cleaning
+	@for target in $(TARGETS); do \
+		$(MAKE) $$target-clean; \
+	done
 
-rom: directories $(TARGET)
+# Include available build targets
+include Makefile.targets
+
+
+# create necessary directories after Makefile is parsed but before build
+# info prevents the command from being pasted into the makefile
+ifneq ($(strip $(EXT)),)           # Only make the directories if EXT has been set by a target
+$(info $(shell mkdir -p $(MKDIRS)))
+endif

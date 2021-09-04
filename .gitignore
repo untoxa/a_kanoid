@@ -1,11 +1,9 @@
-*.bak
 *.map
 *.sym
+*.ihx
+*.noi
+*.cdb
+*.bak
 /unused
 /obj
-/build/*.map
-/build/*.sym
-/build/*.ihx
-/build/*.noi
-/build/*.cdb
 /.vscode
