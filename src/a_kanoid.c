@@ -49,6 +49,7 @@ void execute_ball_thread() {
 
         __critical { 
             create_thread(ctx, DEFAULT_STACK_SIZE, &ball_threadproc, (void *)&ball->object);
+            cancel_pending_interrupts();
         }
     }
 }
