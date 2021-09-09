@@ -56,7 +56,7 @@ void execute_ball_thread() {
 
 //const sprite_offset_t const bat_offsets[3] = {{0x10, 0x08}, {0x10, 0x10}, {0x10, 0x18}};
 const metasprite_t bat0[] = {
-    {DEVICE_SPRITE_OFFSET_Y, DEVICE_SPRITE_OFFSET_X, 0, 0}, {0, 8, 1, 0},  {0, 8, 2, 0}, {metasprite_end}
+    {DEVICE_SPRITE_PX_OFFSET_Y, DEVICE_SPRITE_PX_OFFSET_X, 0, 0}, {0, 8, 1, 0},  {0, 8, 2, 0}, {metasprite_end}
 };
 const metasprite_t * const bat[] = { bat0 };
 

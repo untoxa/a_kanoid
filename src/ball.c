@@ -40,7 +40,7 @@ void ball_threadproc(void * arg, void * ctx) {
                 case BALL_STUCK:
                     ball->x = bat_x + 8;
                     ball->y = bat_y - 8;
-                    move_sprite(ball->idx, ball->x + DEVICE_SPRITE_OFFSET_X, ball->y + DEVICE_SPRITE_OFFSET_Y);
+                    move_sprite(ball->idx, ball->x + DEVICE_SPRITE_PX_OFFSET_X, ball->y + DEVICE_SPRITE_PX_OFFSET_Y);
                     break;
                 case BALL_FLY: 
                     if (ball->dx) { 
@@ -62,7 +62,7 @@ void ball_threadproc(void * arg, void * ctx) {
                         if (ball->y) ball->y--; 
                         if (ball->y == MIN_BALL_Y) ball->dy = 1;             
                     }                    
-                    move_sprite(ball->idx, ball->x + DEVICE_SPRITE_OFFSET_X, ball->y + DEVICE_SPRITE_OFFSET_Y);
+                    move_sprite(ball->idx, ball->x + DEVICE_SPRITE_PX_OFFSET_X, ball->y + DEVICE_SPRITE_PX_OFFSET_Y);
                     break;
             }
             last_tick = now;
