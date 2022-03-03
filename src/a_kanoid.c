@@ -54,9 +54,13 @@ void execute_ball_thread() {
     }
 }
 
-//const sprite_offset_t const bat_offsets[3] = {{0x10, 0x08}, {0x10, 0x10}, {0x10, 0x18}};
+#ifdef MSXDOS
+#define SPRITE_ATTR 0x0f
+#else
+#define SPRITE_ATTR 0x00
+#endif
 const metasprite_t bat0[] = {
-    {DEVICE_SPRITE_PX_OFFSET_Y, DEVICE_SPRITE_PX_OFFSET_X, 0, 0}, {0, 8, 1, 0},  {0, 8, 2, 0}, {metasprite_end}
+    METASPR_ITEM(DEVICE_SPRITE_PX_OFFSET_Y, DEVICE_SPRITE_PX_OFFSET_X, 0, SPRITE_ATTR), METASPR_ITEM(0, 8, 1, SPRITE_ATTR),  METASPR_ITEM(0, 8, 2, SPRITE_ATTR), METASPR_TERM
 };
 const metasprite_t * const bat[] = { bat0 };
 
@@ -70,9 +74,20 @@ UWORD msg;
 UBYTE msg_h, msg_l;
 
 void main () {
-    set_sprite_data(0, 3, bat_tiles); 
-    set_sprite_data(3, 1, ball); 
+#if defined(MSXDOS)
+    _current_1bpp_colors = 0xf0;
+    set_bkg_1bpp_data(0, 1, empty_tile);
+    set_bkg_1bpp_data(256, 1, empty_tile);
+    set_bkg_1bpp_data(512, 1, empty_tile);
+#else
+    set_bkg_1bpp_data(0, 1, empty_tile);
+#endif
+
+    set_sprite_1bpp_data(0, 3, bat_tiles); 
+    set_sprite_1bpp_data(3, 1, ball); 
     
+    fill_bkg_rect(DEVICE_SCREEN_X_OFFSET, DEVICE_SCREEN_Y_OFFSET, DEVICE_SCREEN_WIDTH, DEVICE_SCREEN_HEIGHT, 0x00);
+
     ring_init(&feedback_ring, 0);                           // initialize a feedback ring
   
     // create pool of threads
@@ -85,6 +100,7 @@ void main () {
     for (UBYTE i = 0; i < MAX_BALLS; i++) {
         ball_objects[i].next = free_balls;
         set_sprite_tile(i + 3, 3);
+        set_sprite_prop(i + 3, SPRITE_ATTR);
         ball_objects[i].object.idx = i + 3;
         ball_init_coords(&ball_objects[i].object);
         free_balls = &ball_objects[i];
@@ -92,11 +108,11 @@ void main () {
       
     execute_ball_thread();
     
-#if defined(__TARGET_gb) || defined(__TARGET_ap)
+#if defined(NINTENDO)
     add_TIM(&supervisor);    
     TMA_REG = 0xE0U; TAC_REG = 0x04U;
     set_interrupts(VBL_IFLAG | TIM_IFLAG);
-#elif defined(__TARGET_sms) || defined(__TARGET_gg)
+#elif defined(SMS) || defined(MSXDOS)
     add_VBL(&supervisor);
     set_interrupts(VBL_IFLAG); 
 #endif
@@ -105,7 +121,7 @@ void main () {
         
     broadcast_message(MAKE_WORD(pad_y, pad_x));             // broadcast position of a bat    
         
-    while (1) {
+    while (TRUE) {
         now = gettickcount();
         if (now != last_tick) {                             // at least 1 VBL
             joy = joypad();

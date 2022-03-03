@@ -2,7 +2,7 @@
 # Platform specific flags for compiling (only populate if they're both present)
 ifneq ($(strip $(PORT)),)
 ifneq ($(strip $(PLAT)),)
-CFLAGS += -m$(PORT):$(PLAT) -D_PLAT_$(PLAT)
+CFLAGS += -m$(PORT):$(PLAT)
 endif
 endif
 
@@ -11,7 +11,12 @@ build-target: $(BINS)
 
 clean-target:
 	rm -rf $(OBJDIR)
-	rm -rf $(BINDIR)
+	rm -f $(BINDIR)/*.com $(BINDIR)/*.bin $(BINDIR)/*.noi $(BINDIR)/*.sym $(BINDIR)/*.ihx $(BINDIR)/*.map $(BINDIR)/*.0??
+
+msxdos-clean:
+	${MAKE} clean-target EXT=com
+msxdos:
+	${MAKE} build-target PORT=z80 PLAT=msxdos EXT=com
 
 gb-clean:
 	${MAKE} clean-target EXT=gb
@@ -29,6 +34,12 @@ pocket-clean:
 	${MAKE} clean-target EXT=pocket
 pocket:
 	${MAKE} build-target PORT=gbz80 PLAT=ap EXT=pocket
+
+
+megaduck-clean:
+	${MAKE} clean-target EXT=duck
+megaduck:
+	${MAKE} build-target PORT=gbz80 PLAT=duck EXT=duck
 
 
 sms-clean:

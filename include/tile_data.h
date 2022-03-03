@@ -3,5 +3,6 @@
 
 extern const unsigned char const ball[];
 extern const unsigned char const bat_tiles[];
+extern const unsigned char const empty_tile[];
 
 #endif

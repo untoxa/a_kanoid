@@ -16,6 +16,7 @@ LCCFLAGS_pocket  = -Wm-yS # Usually the same as required for .gb
 LCCFLAGS_gbc     = -Wm-yS -Wm-yc # Same as .gb with: -Wm-yc (gb & gbc) or Wm-yC (gbc exclusive)
 LCCFLAGS_sms     = -Wm-yS
 LCCFLAGS_gg      = -Wm-yS
+LCCFLAGS_msxdos  =
 
 LCCFLAGS += $(LCCFLAGS_$(EXT)) # This adds the current platform specific LCC Flags
 
