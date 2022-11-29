@@ -22,6 +22,6 @@ typedef struct ball_t {
 } ball_t;
 
 extern void ball_init_coords(ball_object_t * ball);
-extern void ball_threadproc(void * arg, void * ctx);
+extern void ball_threadproc(void * arg, void * ctx) __sdcccall(0);
 
 #endif

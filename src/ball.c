@@ -18,7 +18,7 @@ void ball_init_coords(ball_object_t * ball) {
     ball->state = BALL_STUCK;
 }
 
-void ball_threadproc(void * arg, void * ctx) {
+void ball_threadproc(void * arg, void * ctx) __sdcccall(0) {
     ring_t * queue = (ring_t *)(((context_t *)ctx)->queue);
     ball_object_t * ball = (ball_object_t *) arg;
     UWORD last_tick = gettickcount(), now;
