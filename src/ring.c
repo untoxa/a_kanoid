@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #include "ring.h"
 
 void ring_init(ring_t * ring, int size) {
@@ -7,8 +9,8 @@ void ring_init(ring_t * ring, int size) {
     }
 }
 
-UBYTE ring_put(ring_t * ring, UWORD data) {
-    UBYTE h = ring->head;
+uint8_t ring_put(ring_t * ring, uint16_t data) {
+    uint8_t h = ring->head;
     if (++h >= ring->size) h = 0;
     if (h == ring->tail) return 0;
     ring->ring[ring->head] = data;
@@ -16,8 +18,8 @@ UBYTE ring_put(ring_t * ring, UWORD data) {
     return 1;
 }
 
-UBYTE ring_get(ring_t * ring, UWORD * res) {
-    UBYTE t = ring->tail;
+uint8_t ring_get(ring_t * ring, uint16_t * res) {
+    uint8_t t = ring->tail;
     if (t == ring->head) return 0;
     *res = ring->ring[ring->tail];
     if (++t >= ring->size) t = 0;

@@ -3,15 +3,17 @@
 
 #include <gbdk/platform.h>
 
+#include <stdint.h>
+
 #include "ring.h"
 
 enum ball_state_t { BALL_STUCK, BALL_FLY };
 
-typedef struct { 
-    UBYTE idx; 
-    UBYTE x, dx; 
-    UBYTE y, dy; 
-    UBYTE speed;
+typedef struct {
+    uint8_t idx;
+    uint8_t x, dx;
+    uint8_t y, dy;
+    uint8_t speed;
     enum ball_state_t state;
 } ball_object_t;
 
