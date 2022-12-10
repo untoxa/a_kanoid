@@ -25,7 +25,7 @@ LCCFLAGS += -Wl-j
 # LCCFLAGS += -debug # Uncomment to enable debug output
 # LCCFLAGS += -v     # Uncomment for lcc verbose output
 
-CFLAGS = -Wf-Iinclude
+CFLAGS = -Wf-Iinclude -Wf'--max-allocs-per-node 50000'
 
 # You can set the name of the ROM file here
 PROJECTNAME = a_kanoid
@@ -42,12 +42,19 @@ CSOURCES    = $(foreach dir,$(SRCDIR),$(notdir $(wildcard $(dir)/*.c))) $(foreac
 ASMSOURCES  = $(foreach dir,$(SRCDIR),$(notdir $(wildcard $(dir)/*.s)))
 OBJS        = $(CSOURCES:%.c=$(OBJDIR)/%.o) $(ASMSOURCES:%.s=$(OBJDIR)/%.o)
 
+DEPENDANT   = $(CSOURCES:%.c=$(OBJDIR)/%.o)
+
 # Builds all targets sequentially
 all: $(TARGETS)
 
+# Dependencies
+DEPS = $(DEPENDANT:%.o=%.d)
+
+-include $(DEPS)
+
 # Compile .c files in "src/" to .o object files
 $(OBJDIR)/%.o:	$(SRCDIR)/%.c
-	$(LCC) $(CFLAGS) -c -o $@ $<
+	$(LCC) -Wf-MMD $(CFLAGS) -c -o $@ $<
 
 # Compile .c files in "res/" to .o object files
 $(OBJDIR)/%.o:	$(RESDIR)/%.c
