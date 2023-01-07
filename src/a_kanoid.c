@@ -1,5 +1,4 @@
 #include <gbdk/platform.h>
-#include <gbdk/font.h>
 #include <gbdk/metasprites.h>
 
 #include <stdint.h>
@@ -14,7 +13,7 @@
 #include "tile_data.h"
 
 #define BAT_MIN_X 0
-#define BAT_MAX_X ((DEVICE_SCREEN_WIDTH * 8) - (3 * 8))
+#define BAT_MAX_X ((DEVICE_SCREEN_WIDTH - 3) << 3)
 
 void broadcast_message(uint16_t msg) {
     context_t * ctx = first_context->next;
@@ -71,7 +70,7 @@ const unsigned char const bat_tile_map[3] = {0, 1, 2};
 
 uint16_t last_tick = 0, now;
 uint8_t joy = 0, old_joy = 0;
-uint8_t old_pad_x = 1, pad_x = 0, old_pad_y = 0, pad_y = ((DEVICE_SCREEN_HEIGHT - 1) * 8);
+uint8_t old_pad_x = 1, pad_x = 0, old_pad_y = 0, pad_y = ((DEVICE_SCREEN_HEIGHT - 1) << 3);
 uint16_t msg;
 uint8_t msg_h, msg_l;
 
@@ -90,38 +89,40 @@ void main () {
 
     fill_bkg_rect(DEVICE_SCREEN_X_OFFSET, DEVICE_SCREEN_Y_OFFSET, DEVICE_SCREEN_WIDTH, DEVICE_SCREEN_HEIGHT, 0x00);
 
-    ring_init(&feedback_ring, 0);                           // initialize a feedback ring
+    // initialize the feedback ring
+    ring_init(&feedback_ring, 0);
 
-    // create pool of threads
-    for (uint8_t i = 0; i < MAX_THREADS; i++) {
-        thread_contexts[i].next = free_contexts;
-        free_contexts = &thread_contexts[i];
-    }
+    // create the pool of threads
+    for (uint8_t i = 0; i < MAX_THREADS; i++) LIST_PUSH(free_contexts, thread_contexts + i);
 
     // create pool of balls
-    for (uint8_t i = 0; i < MAX_BALLS; i++) {
-        ball_objects[i].next = free_balls;
-        set_sprite_tile(i + 3, 3);
-        set_sprite_prop(i + 3, SPRITE_ATTR);
-        ball_objects[i].object.idx = i + 3;
-        ball_init_coords(&ball_objects[i].object);
-        free_balls = &ball_objects[i];
+    ball_t * ball = ball_objects;
+    for (uint8_t i = 3; i < MAX_BALLS + 3; i++, ball++) {
+        LIST_PUSH(free_balls, ball);
+        set_sprite_tile(i, 3);
+        set_sprite_prop(i, SPRITE_ATTR);
+        ball->object.idx = i;
+        ball_init_coords(&(ball->object));
     }
 
     execute_ball_thread();
 
 #if defined(NINTENDO)
-    add_TIM(&supervisor);
-    TMA_REG = 0xE0U; TAC_REG = 0x04U;
+    CRITICAL {
+        add_TIM(&supervisor);
+        TMA_REG = 0xE0U; TAC_REG = 0x04U;
+    }
     set_interrupts(VBL_IFLAG | TIM_IFLAG);
 #elif defined(SMS) || defined(MSXDOS)
-    add_VBL(&supervisor);
+    CRITICAL {
+        add_VBL(&supervisor)
+    };
     set_interrupts(VBL_IFLAG);
 #endif
 
     SHOW_SPRITES;
 
-    broadcast_message(MAKE_WORD(pad_y, pad_x));             // broadcast position of a bat
+    broadcast_message(MAKE_WORD(pad_y, pad_x));             // broadcast position of the bat
 
     while (TRUE) {
         now = gettickcount();
@@ -152,13 +153,9 @@ void main () {
                     context_t * ctx = get_thread_by_id(msg_l);
                     if (ctx) {
                         terminate_and_destroy_thread(ctx);
-                        ctx->next = free_contexts;
-                        free_contexts = ctx;
+                        LIST_PUSH(free_contexts, ctx);
                         ball_t * ball = (ball_t *)(ctx->userdata);
-                        if (ball) {
-                            ball->next = free_balls;
-                            free_balls = ball;
-                        }
+                        if (ball) LIST_PUSH(free_balls, ball);
                     }
                     break;
                 }

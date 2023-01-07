@@ -11,9 +11,8 @@ enum ball_state_t { BALL_STUCK, BALL_FLY };
 
 typedef struct {
     uint8_t idx;
-    uint8_t x, dx;
-    uint8_t y, dy;
-    uint8_t speed;
+    uint8_t x, y;
+    int8_t dx, dy;
     enum ball_state_t state;
 } ball_object_t;
 
@@ -24,6 +23,6 @@ typedef struct ball_t {
 } ball_t;
 
 extern void ball_init_coords(ball_object_t * ball);
-extern void ball_threadproc(void * arg, void * ctx) __sdcccall(0);
+extern void ball_threadproc(void * arg, void * ctx) OLDCALL;
 
 #endif

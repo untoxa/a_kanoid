@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #define THREAD_SMART_SWITCHING
+#define CRT0_ISR_STACK_USAGE 4
 
 #include "threads.h"
 
@@ -14,8 +15,10 @@
     #define NORETURN _Noreturn
 #endif
 
-uint8_t switch_mutex = 0xff;
-main_context_t main_context = {0, 0};                           // this is a main task context
+#ifdef THREAD_SMART_SWITCHING
+uint8_t switch_mutex = 0b11111111;
+#endif
+main_context_t main_context = {.task_sp = NULL, .next = NULL};  // this is a main task context
 context_t * first_context = (context_t *)&main_context;         // start of a context chain
 context_t * current_context = (context_t *)&main_context;       // current context pointer
 
@@ -28,7 +31,7 @@ _supervisor_ISR::
         push    BC
         push    DE
 
-        add     SP, #-4
+        add     SP, #-CRT0_ISR_STACK_USAGE
         jr      _supervisor
 
 _switch_to_thread::
@@ -42,8 +45,7 @@ _switch_to_thread::
         ld      HL, #_switch_mutex
         ld      (HL), #0b11111101       ; release of the slice disables next scheduled switching of context
 #endif
-        add     SP, #-4                 ; two words on the top of a stack are dropped by supervisor
-                                        ; to make it compatible with the beginning of an interriupt routine in crt
+        add     SP, #-CRT0_ISR_STACK_USAGE
 _supervisor::
 #ifdef THREAD_SMART_SWITCHING
         ld      HL, #_switch_mutex      ; check whether we need to switch context this time or not
@@ -51,9 +53,10 @@ _supervisor::
         jr      nc, 3$                  ; carry is normally set here
 #endif
                                         ; context switch is required
-        ldhl    SP, #4
+        ldhl    SP, #CRT0_ISR_STACK_USAGE       ; CRT0_ISR_STACK_USAGE bytes on the top of a stack are dropped by supervisor
+                                                ; to make it compatible with the beginning of an interriupt routine in crt0
         ld      B, H
-        ld      C, L                    ; BC = SP + 4
+        ld      C, L                    ; BC = SP + CRT0_ISR_STACK_USAGE
 
         ld      HL, #_current_context
         ld      A, (HL+)
@@ -101,7 +104,7 @@ _supervisor::
         reti
 #ifdef THREAD_SMART_SWITCHING
 3$:                                     ; switching is not required, context was switched by user during the previous slice
-        add     SP, #4
+        add     SP, #CRT0_ISR_STACK_USAGE
         jr      2$
 #endif
 #elif defined(MASTERSYSTEM) || defined(GAMEGEAR) || defined(MSXDOS)
@@ -186,8 +189,8 @@ __endasm;
 }
 
 NORETURN void __trap_function(context_t * context) OLDCALL {
-    context->finished = 1;
-    while(1) switch_to_thread();        // it is safe to dispose context when the thread execution is here
+    context->finished = TRUE;
+    while(TRUE) switch_to_thread();        // it is safe to dispose context when the thread execution is here
 }
 
 context_t * get_thread_by_id(uint8_t id) {
@@ -196,30 +199,31 @@ context_t * get_thread_by_id(uint8_t id) {
         if (ctx->thread_id == id) return ctx;
         ctx = ctx->next;
     }
-    return 0;
+    return NULL;
 }
 
-uint8_t generate_thread_id() {
-    uint8_t id = 1;
-    while (get_thread_by_id(id)) id++;
+inline uint8_t generate_thread_id() {
+    static uint8_t id = 0;
+    while (get_thread_by_id(++id));
     return id;
 }
 
 void create_thread(context_t * context, uint16_t stack_size, threadproc_t threadproc, void * arg) {
     if ((context) && (threadproc)) {
-        if (!stack_size) stack_size = CONTEXT_STACK_SIZE_IN_WORDS; else stack_size = stack_size >> 1;
         context_t * last_context;
 
         // initialize the new context
-        context->next = context->finished = context->terminated = 0;
+        context->next = NULL;
+        context->finished = context->terminated = FALSE;
         context->thread_id = generate_thread_id();
 
-        // set stack for a new thread
-        context->stack[stack_size - 1] = (uint16_t)context;           // thread context
-        context->stack[stack_size - 2] = (uint16_t)arg;               // threadproc argument
-        context->stack[stack_size - 3] = (uint16_t)__trap_function;   // fall thare when threadproc exits
-        context->stack[stack_size - 4] = (uint16_t)threadproc;        // threadproc entry point
-        context->task_sp = &context->stack[stack_size - 4 - REGISTER_BLOB_SIZE];    // space for registers (all registers are undefined on the threadproc entry)
+        // set stack for the new thread
+        uint16_t * stack = context->stack + ((stack_size) ? stack_size >> 1 : CONTEXT_STACK_SIZE_IN_WORDS);
+        *--stack = (uint16_t)context;                   // thread context
+        *--stack = (uint16_t)arg;                       // threadproc argument
+        *--stack = (uint16_t)__trap_function;           // fall there when threadproc exits
+        *--stack = (uint16_t)threadproc;                // threadproc entry point
+        context->task_sp = stack - REGISTER_BLOB_SIZE;  // space for registers (all registers are undefined on the threadproc entry)
 
         // get last context in the chain
         for (last_context = first_context; (last_context->next); last_context = last_context->next) ;
@@ -237,7 +241,7 @@ void destroy_thread(context_t * context) {
 }
 
 void terminate_thread(context_t * context) {
-    if (context) context->terminated = 1;
+    if (context) context->terminated = TRUE;
 }
 
 void join_thread(context_t * context) {
