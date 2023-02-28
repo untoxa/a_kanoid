@@ -249,7 +249,7 @@ void join_thread(context_t * context) {
 }
 
 #if defined(GAMEBOY) || defined(ANALOGUEPOCKET) || defined(MEGADUCK)
-uint8_t mutex_trylock(mutex_t * mutex) NAKED PRESERVES_REGS(b, c) {
+uint8_t mutex_try_lock(mutex_t * mutex) NAKED PRESERVES_REGS(b, c) {
     mutex;
 __asm
         ld      h, d
