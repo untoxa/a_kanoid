@@ -34,7 +34,7 @@ void terminate_and_destroy_thread(context_t * thread) {
     }
 }
 
-void execute_ball_thread() {
+void execute_ball_thread(void) {
     if ((free_contexts) && (free_balls)) {
         ball_t * ball = free_balls;
         free_balls = ball->next;
@@ -74,7 +74,7 @@ uint8_t old_pad_x = 1, pad_x = 0, old_pad_y = 0, pad_y = ((DEVICE_SCREEN_HEIGHT 
 uint16_t msg;
 uint8_t msg_h, msg_l;
 
-void main () {
+void main(void) {
 #if defined(MSXDOS)
     _current_1bpp_colors = 0xf0;
     set_bkg_1bpp_data(0, 1, empty_tile);

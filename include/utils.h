@@ -11,6 +11,6 @@
 
 #define LIST_PUSH(LIST, ITM) ((ITM)->next=(LIST),(LIST)=(ITM))
 
-extern uint16_t gettickcount();
+extern uint16_t gettickcount(void);
 
 #endif
